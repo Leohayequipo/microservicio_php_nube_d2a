@@ -1,0 +1,18 @@
+# Archivos de desarrollo local
+storage/logs/*.log
+storage/tmp/*
+test_*.php
+*.md
+.git/
+.gitignore
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+desktop.ini 
