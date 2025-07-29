@@ -7,7 +7,9 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
-    && docker-php-ext-install zip
+    && docker-php-ext-install zip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -18,8 +20,8 @@ WORKDIR /app
 # Copiar archivos de dependencias
 COPY composer.json composer.lock ./
 
-# Instalar dependencias
-RUN composer install --no-dev --optimize-autoloader
+# Instalar dependencias (sin optimizar para evitar errores)
+RUN composer install --no-dev
 
 # Copiar código de la aplicación
 COPY . .
