@@ -18,8 +18,7 @@
     },
     "scripts": {
         "post-install-cmd": [
-            "if not exist storage\\logs mkdir storage\\logs",
-            "if not exist storage\\tmp mkdir storage\\tmp"
+            "mkdir -p storage/logs storage/tmp"
         ]
     }
 }
