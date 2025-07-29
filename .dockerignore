@@ -1,0 +1,10 @@
+.git
+.gitignore
+README.md
+INSTRUCCIONES.md
+DEPLOY_*.md
+RAILWAY.md
+storage/logs/*.log
+storage/tmp/*
+.env
+*.log 

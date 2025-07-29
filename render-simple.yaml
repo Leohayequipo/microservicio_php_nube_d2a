@@ -1,9 +1,11 @@
 services:
   - type: web
-    name: d2a-microservicio
+    name: d2a-microservicio-simple
     env: php
     plan: free
-    buildCommand: composer install --no-dev --optimize-autoloader
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader --no-interaction
+      mkdir -p storage/logs storage/tmp
     startCommand: php -S 0.0.0.0:$PORT -t public
     healthCheckPath: /health
     envVars:

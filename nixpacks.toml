@@ -1,11 +1,14 @@
 [phases.setup]
-nixPkgs = ["php", "php-curl", "composer"]
+nixPkgs = ["php", "php-curl", "composer", "git"]
 
 [phases.install]
-cmds = ["composer install --no-dev --optimize-autoloader"]
+cmds = [
+    "composer install --no-dev --optimize-autoloader --no-interaction",
+    "mkdir -p storage/logs storage/tmp"
+]
 
 [phases.build]
-cmds = ["echo 'Build completed'"]
+cmds = ["echo 'Build completed successfully'"]
 
 [start]
-cmd = "php -S 0.0.0.0:$PORT -t public" 
+cmd = "php -S 0.0.0.0:${PORT:-8080} -t public" 

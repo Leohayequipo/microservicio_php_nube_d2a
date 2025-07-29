@@ -15,6 +15,14 @@ if (strpos($requestUri, '/checkout-temp') !== false) {
     include __DIR__ . '/docs.php';
 } elseif (strpos($requestUri, '/swagger') !== false) {
     include __DIR__ . '/swagger.php';
+} elseif (strpos($requestUri, '/health') !== false) {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'status' => 'ok',
+        'timestamp' => date('c'),
+        'environment' => config('environment'),
+        'version' => '1.0.0'
+    ]);
 } else {
     http_response_code(404);
     echo json_encode(['error' => 'Not Found']);
