@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: d2a-microservicio
+    env: php
+    plan: free
+    buildCommand: composer install --no-dev --optimize-autoloader
+    startCommand: php -S 0.0.0.0:$PORT -t public
+    healthCheckPath: /swagger
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: D2A_API_URL
+        value: https://api.d2a.com
+      - key: LOG_LEVEL
+        value: INFO 
