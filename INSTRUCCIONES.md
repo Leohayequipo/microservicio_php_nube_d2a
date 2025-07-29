@@ -9,7 +9,9 @@ Tu microservicio D2A está completamente configurado y listo para usar.
 ```
 Nube_d2a_microservicio/
 │── public/
-│    └── index.php          # Punto de entrada
+│    ├── index.php          # Punto de entrada
+│    ├── swagger.php        # Especificación OpenAPI
+│    └── docs.php           # Interfaz Swagger UI
 │── src/
 │    ├── Controllers/
 │    │   ├── CheckoutController.php
@@ -78,6 +80,19 @@ Content-Type: application/json
 }
 ```
 
+### 3. Documentación API (Swagger)
+```
+GET /docs          # Interfaz Swagger UI interactiva
+GET /swagger       # Especificación OpenAPI 3.0 JSON
+```
+
+**Características de la documentación:**
+- ✅ **Interfaz interactiva** para probar endpoints
+- ✅ **Documentación automática** de parámetros
+- ✅ **Ejemplos de uso** incluidos
+- ✅ **Validación de esquemas** en tiempo real
+- ✅ **Especificación OpenAPI 3.0** estándar
+
 ## 🚀 Cómo Ejecutar
 
 ### Opción 1: Servidor de Desarrollo PHP
@@ -95,7 +110,14 @@ php -S localhost:8000 -t public
 
 ## 🧪 Probar el Microservicio
 
-### Con cURL:
+### Opción 1: Interfaz Swagger (Recomendado)
+1. **Abrir navegador:** `http://localhost:8000/docs`
+2. **Expandir endpoint** que quieras probar
+3. **Hacer clic en "Try it out"**
+4. **Completar datos** de ejemplo
+5. **Ejecutar** y ver respuesta
+
+### Opción 2: Con cURL:
 ```bash
 # Test checkout
 curl -X POST http://localhost:8000/checkout-temp \
@@ -158,6 +180,9 @@ php composer.phar require nombre/paquete
 
 # Verificar estado
 php composer.phar diagnose
+
+# Generar documentación Swagger (si usas anotaciones)
+php vendor/bin/openapi src/ -o public/swagger.json
 ```
 
 ## 🛠️ Desarrollo
@@ -216,3 +241,22 @@ Si encuentras algún problema:
 ## 🎉 ¡Listo!
 
 Tu microservicio D2A está completamente funcional y listo para integrar con Tiendanube y D2A.
+
+### 🏆 **Características Implementadas:**
+
+- ✅ **Microservicio funcional** con checkout y webhooks
+- ✅ **Documentación interactiva** con Swagger UI
+- ✅ **Especificación OpenAPI 3.0** estándar
+- ✅ **Logs y monitoreo** automático
+- ✅ **Control de versiones** con Git
+- ✅ **Estructura profesional** MVC
+- ✅ **Pruebas interactivas** desde navegador
+- ✅ **Configuración flexible** para desarrollo/producción
+
+### 🚀 **Próximos pasos sugeridos:**
+
+1. **Probar endpoints** desde `http://localhost:8000/docs`
+2. **Configurar variables de entorno** para producción
+3. **Implementar autenticación** si es necesario
+4. **Agregar más endpoints** según necesidades
+5. **Configurar CI/CD** para despliegue automático

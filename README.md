@@ -7,21 +7,19 @@ Microservicio PHP para integración con la plataforma de pagos D2A.
 ```
 Nube_d2a_microservicio/
 │── public/
-│    └── index.php          # Punto de entrada, router
+│    ├── index.php          # Punto de entrada, router
+│    ├── swagger.php        # Especificación OpenAPI
+│    └── docs.php           # Interfaz Swagger UI
 │── src/
 │    ├── Controllers/       # Controladores para cada endpoint
 │    │   ├── CheckoutController.php
 │    │   └── WebhookController.php
 │    ├── Services/          # Lógica de negocio (D2A, Webhooks)
 │    │   ├── D2AService.php
+│    │   ├── CheckoutService.php
 │    │   └── WebhookService.php
-│    ├── Models/            # Modelos simples (Checkout, Orden)
-│    │   ├── Checkout.php
-│    │   └── Orden.php
-│    ├── Helpers/           # Funciones auxiliares
-│    │   └── Logger.php
 │    └── Config/            # Configuración
-│        └── config.php
+│        └── bootstrap.php
 │── storage/
 │    ├── logs/              # Logs
 │    └── tmp/               # Datos temporales🚀 1. Requisitos
@@ -54,6 +52,20 @@ bash
 
 http://localhost/d2a-hub/public/
 ▶️ 4. Endpoints
+
+### 📖 **Documentación API (Swagger)**
+```
+GET /docs          # Interfaz Swagger UI interactiva
+GET /swagger       # Especificación OpenAPI 3.0 JSON
+```
+
+**Características:**
+- ✅ **Interfaz interactiva** para probar endpoints
+- ✅ **Documentación automática** de parámetros
+- ✅ **Ejemplos de uso** incluidos
+- ✅ **Validación de esquemas** en tiempo real
+
+### 🔌 **Endpoints de la API**
 A. /checkout-temp
 📌 Recibe datos del Checkout SDK y crea un evento inicial en D2A.
 Método: POST
