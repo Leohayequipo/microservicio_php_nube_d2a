@@ -6,10 +6,10 @@
 
 return [
     // Credenciales de D2A - REEMPLAZAR CON TUS VALORES REALES
-    'api_key' => '1D9C0741F1073B246FACA8C793756379',
-    'api_secret' => '5E475C13F9E69CBFA321F0D9EF322A03',
+    'api_key' => 'EBF3E0C2B8B540036ED36DA8004A2F56',
+    'api_secret' => '5A167F6E4060C256FF6098ADAFF8A275',
     'environment' => 'datst.simbel.com.ar',
-    'customer_id' => '98765432',
+    'customer_id' => '91699759',
     
     // URLs de la API
     'api_url' => 'https://datst.simbel.com.ar/Dashboard/Loader/api',
