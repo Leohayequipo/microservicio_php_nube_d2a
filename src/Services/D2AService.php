@@ -136,17 +136,25 @@ class D2AService {
             }
         }
 
-        // Validar datos requeridos
+        // Validar datos requeridos (permitir campos vacíos pero no faltantes)
         $requiredFields = [
             'registrant', 'typeOfId', 'nationalId', 'name', 'lastName', 
-            'gender', 'age', 'email', 'cellphone', 'city', 'state', 
+            'gender', 'age', 'email', 'city', 'state', 
             'country', 'address1', 'totalInCart', 'totalBought'
         ];
 
         foreach ($requiredFields as $field) {
-            if (!isset($data[$field]) || empty($data[$field])) {
+            if (!isset($data[$field])) {
                 error_log("D2A Registration Error: Campo requerido '$field' faltante");
                 return false;
+            }
+        }
+
+        // Campos opcionales que pueden estar vacíos
+        $optionalFields = ['cellphone', 'facebookId', 'instagramId', 'twitterId', 'linkedinId', 'address2'];
+        foreach ($optionalFields as $field) {
+            if (!isset($data[$field])) {
+                $data[$field] = ''; // Asignar valor vacío por defecto
             }
         }
 
