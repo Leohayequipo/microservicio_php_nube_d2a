@@ -49,8 +49,16 @@ $sessionName = $abu_session[3];
 $visitorName = $abu_session[4];
 $registrantEmail = $abu_session[5];
 
-// Simular el invitado como en tu implementación
-$invitado = array("email" => $registrantEmail);
+// Simular el invitado con datos inventados como en tu implementación
+$invitado = array(
+    "email" => $registrantEmail,
+    "numeroDocumento" => "12345678",
+    "nombre" => "Juan",
+    "apellido" => "Pérez",
+    "telefono" => "+5491112345678",
+    "domicilio" => "Av. Corrientes",
+    "altura" => "123"
+);
 
 echo "🔍 **Valores extraídos:**\n";
 echo "User Time: $userTime\n";
@@ -58,6 +66,14 @@ echo "User Time Zone: $userTimeZone\n";
 echo "Session Name: $sessionName\n";
 echo "Visitor Name: $visitorName\n";
 echo "Registrant: $registrantEmail\n\n";
+
+echo "👤 **Datos del invitado (inventados):**\n";
+echo "Email: " . $invitado['email'] . "\n";
+echo "DNI: " . $invitado['numeroDocumento'] . "\n";
+echo "Nombre: " . $invitado['nombre'] . "\n";
+echo "Apellido: " . $invitado['apellido'] . "\n";
+echo "Teléfono: " . $invitado['telefono'] . "\n";
+echo "Dirección: " . $invitado['domicilio'] . " " . $invitado['altura'] . "\n\n";
 
 // Crear instancia de d2a exactamente como en tu implementación
 $conexion = new d2a($apiKey, $apiSecret, $environment, $customer, $sessionName, $visitorName, $registrantEmail, "", "", "", $userTime, $userTimeZone);
@@ -73,24 +89,32 @@ echo "rg: " . $conexion->rg . "\n";
 echo "op: " . $conexion->op . "\n\n";
 
 // Crear mensaje de registration exactamente como en tu implementación
+$registrantDni = $invitado['numeroDocumento'];
+$registrantNombre = $invitado['nombre'];
+$registrantApellido = $invitado['apellido'];
+$registrantTel = $invitado['telefono'];
+$registrantDireccion = $invitado['domicilio'] . " " . $invitado['altura'];
+$registrantLocalidad = 'Ciudad Autónoma de Buenos Aires';
+$registrantProvincia = 'Buenos Aires';
+
 $msg = new d2aRegistration(
     $registrantEmail,      // registrantId
     'DNI',                 // typeOfId
-    '12345678',            // nationalId
-    'Juan',                // name
-    'Pérez',               // lastName
+    $registrantDni,        // nationalId
+    $registrantNombre,     // name
+    $registrantApellido,   // lastName
     'N/A',                 // gender
     '',                    // age
     $registrantEmail,      // email
-    '+5491112345678',      // cellphone
+    $registrantTel,        // cellphone
     '',                    // facebookId
     '',                    // instagramId
     '',                    // twitterId
     '',                    // linkedinId
-    '',                    // city
-    '',                    // state
+    $registrantLocalidad,  // city
+    $registrantProvincia,  // state
     'Argentina',           // country
-    'Av. Corrientes 123',  // address1
+    $registrantDireccion,  // address1
     '',                    // address2
     '',                    // companyName
     ''                     // companyCustomer
@@ -99,7 +123,10 @@ $msg = new d2aRegistration(
 echo "📝 **Mensaje de registration creado:**\n";
 echo "Registrant: " . $msg->registrant . "\n";
 echo "Name: " . $msg->name . "\n";
-echo "Email: " . $msg->email . "\n\n";
+echo "Email: " . $msg->email . "\n";
+echo "DNI: " . $msg->nationalId . "\n";
+echo "Teléfono: " . $msg->cellphone . "\n";
+echo "Dirección: " . $msg->address1 . "\n\n";
 
 // Enviar mensaje (esto genera el hash)
 $conexion->message("registration", $msg);
@@ -107,6 +134,20 @@ $conexion->message("registration", $msg);
 echo "🔐 **Hash generado por d2a:**\n";
 echo "String a hashear (st): " . $conexion->st . "\n";
 echo "Hash (hs): " . $conexion->hs . "\n\n";
+
+// Debug adicional para verificar los valores
+echo "🔍 **Valores usados en el hash:**\n";
+echo "ApiKey: " . $conexion->ApiKey . "\n";
+echo "ApiSecret: " . $conexion->ApiSecret . "\n";
+echo "cs: " . $conexion->cs . "\n";
+echo "rg: " . $conexion->rg . "\n";
+echo "op: " . $conexion->op . "\n\n";
+
+// Verificar hash manual
+$manualHash = md5($conexion->ApiKey . $conexion->ApiSecret . $conexion->cs . $conexion->rg . $conexion->op);
+echo "🔍 **Hash manual:**\n";
+echo "String: " . $conexion->ApiKey . $conexion->ApiSecret . $conexion->cs . $conexion->rg . $conexion->op . "\n";
+echo "Hash: " . $manualHash . "\n\n";
 
 echo "📤 **Enviando mensaje...**\n";
 $conexion->send($conexion);

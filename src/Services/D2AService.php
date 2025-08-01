@@ -95,7 +95,8 @@ class D2AService {
         // Verificar respuesta según formato D2A
         $result = json_decode($response, true);
         if ($result && isset($result['track']['rc'])) {
-            return $result['track']['rc'] === 'OK';
+            // Para D2A, rc=0 significa éxito, rc=1 significa error
+            return $result['track']['rc'] === 0;
         }
 
         return $status === 200;
@@ -105,7 +106,7 @@ class D2AService {
      * Genera el hash de autenticación según la implementación de D2A
      */
     private function generateHash($operation, $registrant = ''): string {
-        // Según la implementación exitosa del usuario, el hash se genera como:
+        // Según el test simple que funciona, el hash se genera como:
         // ApiKey + ApiSecret + Customer + Registrant + Operation
         $string = $this->apiKey . $this->apiSecret . $this->customer . $registrant . $operation;
         return md5($string);
@@ -149,42 +150,73 @@ class D2AService {
             }
         }
 
-        // Crear el payload según el formato de d2aRegistration
-        $registrationData = [
-            'track' => '',
-            'registrant' => $data['registrant'],
-            'typeOfId' => $data['typeOfId'],
-            'nationalId' => $data['nationalId'],
-            'name' => $data['name'],
-            'lastName' => $data['lastName'],
-            'gender' => $data['gender'],
-            'age' => (int)$data['age'],
-            'email' => $data['email'],
-            'cellphone' => $data['cellphone'],
-            'facebookId' => $data['facebookId'] ?? '',
-            'instagramId' => $data['instagramId'] ?? '',
-            'twitterId' => $data['twitterId'] ?? '',
-            'linkedinId' => $data['linkedinId'] ?? '',
-            'city' => $data['city'],
-            'state' => $data['state'],
-            'country' => $data['country'],
-            'address1' => $data['address1'],
-            'address2' => $data['address2'] ?? '',
-            'companyName' => '',
-            'companyCustomer' => ''
-        ];
+        // Usar la clase d2a exactamente como en la implementación original
+        require_once __DIR__ . '/../../D2a2Api.php';
+        
+        $userTime = $sessionData['userTime'] ?? date('YmdHis');
+        $userTimeZone = $sessionData['userTimeZone'] ?? '-0300';
+        $sessionName = $sessionData['sessionName'] ?? 'session_' . time();
+        $visitorName = $sessionData['visitorName'] ?? 'visitor_' . time();
+        $registrantEmail = $sessionData['registrant'] ?? $data['registrant'];
 
-        // Preparar el payload para envío según la implementación exacta del usuario
-        $payload = [
-            'operation' => 'registration',
-            'registrant' => $sessionData['registrant'] ?? $data['registrant'],
-            'sessionName' => $sessionData['sessionName'] ?? $data['sessionName'] ?? '',
-            'visitorName' => $sessionData['visitorName'] ?? $data['visitorName'] ?? '',
-            'userTime' => $sessionData['userTime'] ?? $data['userTime'] ?? date('c'),
-            'userTimeZone' => $sessionData['userTimeZone'] ?? $data['userTimeZone'] ?? date('P'),
-            'data' => $registrationData
-        ];
+        // Crear instancia de d2a exactamente como en tu implementación
+        $conexion = new \d2a(
+            $this->apiKey, 
+            $this->apiSecret, 
+            $this->environment, 
+            $this->customer, 
+            $sessionName, 
+            $visitorName, 
+            $registrantEmail, 
+            "", "", "", 
+            $userTime, 
+            $userTimeZone
+        );
 
-        return $this->sendEvent($payload);
+        // Crear mensaje de registration exactamente como en tu implementación
+        $msg = new \d2aRegistration(
+            $registrantEmail,      // registrantId
+            $data['typeOfId'],     // typeOfId
+            $data['nationalId'],   // nationalId
+            $data['name'],         // name
+            $data['lastName'],     // lastName
+            $data['gender'],       // gender
+            $data['age'],          // age
+            $data['email'],        // email
+            $data['cellphone'],    // cellphone
+            $data['facebookId'] ?? '',     // facebookId
+            $data['instagramId'] ?? '',    // instagramId
+            $data['twitterId'] ?? '',      // twitterId
+            $data['linkedinId'] ?? '',     // linkedinId
+            $data['city'],         // city
+            $data['state'],        // state
+            $data['country'],      // country
+            $data['address1'],     // address1
+            $data['address2'] ?? '',       // address2
+            '',                    // companyName
+            ''                     // companyCustomer
+        );
+
+        // Enviar mensaje
+        $conexion->message("registration", $msg);
+        $conexion->send($conexion);
+
+        // Obtener resultado
+        $resultado = $conexion->getLastMessageStatus();
+        
+        // Log del resultado
+        $logEntry = [
+            'timestamp' => date('c'),
+            'result' => $resultado,
+            'success' => ($resultado[1] == 0)
+        ];
+        
+        file_put_contents(
+            __DIR__."/../../storage/logs/d2a.log", 
+            json_encode($logEntry, JSON_PRETTY_PRINT) . "\n---\n", 
+            FILE_APPEND
+        );
+
+        return $resultado[1] == 0;
     }
 }
