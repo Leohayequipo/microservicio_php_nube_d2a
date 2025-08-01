@@ -38,7 +38,10 @@ class D2AController {
                 throw new \Exception('Invalid JSON input');
             }
 
-            $success = $this->d2aService->registerCustomer($input);
+            // Extraer abu_session si está presente
+            $abuSession = $input['abu_session'] ?? '';
+            
+            $success = $this->d2aService->registerCustomer($input, $abuSession);
 
             if ($success) {
                 http_response_code(200);
@@ -80,14 +83,32 @@ class D2AController {
         }
 
         try {
+            // Primero probar si podemos cargar la configuración
+            $configPath = __DIR__ . '/../../config/d2a.php';
+            if (!file_exists($configPath)) {
+                throw new \Exception('Archivo de configuración no encontrado: ' . $configPath);
+            }
+            
+            $config = require $configPath;
+            
+            // Verificar que las credenciales estén configuradas
+            if (empty($config['api_key']) || empty($config['api_secret']) || empty($config['customer_id'])) {
+                throw new \Exception('Credenciales de D2A no configuradas correctamente');
+            }
+            
             $d2aService = new D2AService();
             
             // Payload de prueba
             $testPayload = [
-                'event' => 'ABU_test',
-                'test' => true,
-                'timestamp' => date('c'),
-                'message' => 'Test de conectividad con D2A API'
+                'operation' => 'test',
+                'registrant' => 'test@example.com',
+                'sessionName' => 'test_session',
+                'visitorName' => 'test_visitor',
+                'data' => [
+                    'test' => true,
+                    'timestamp' => date('c'),
+                    'message' => 'Test de conectividad con D2A API'
+                ]
             ];
 
             $success = $d2aService->sendEvent($testPayload);
@@ -98,6 +119,8 @@ class D2AController {
                     'success' => true,
                     'message' => 'Conexión exitosa con D2A API',
                     'timestamp' => date('c'),
+                    'config_loaded' => true,
+                    'api_url' => $config['api_url'],
                     'test_payload' => $testPayload
                 ]);
             } else {
@@ -106,6 +129,8 @@ class D2AController {
                     'success' => false,
                     'error' => 'Error al conectar con D2A API',
                     'timestamp' => date('c'),
+                    'config_loaded' => true,
+                    'api_url' => $config['api_url'],
                     'test_payload' => $testPayload
                 ]);
             }
@@ -115,7 +140,9 @@ class D2AController {
             echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage(),
-                'timestamp' => date('c')
+                'timestamp' => date('c'),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
         }
     }

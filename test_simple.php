@@ -1,0 +1,106 @@
+<?php
+/**
+ * Script simple para probar D2A con valores exactos del usuario
+ */
+
+// Incluir la clase d2a
+require_once __DIR__ . '/D2a2Api.php';
+
+echo "🧪 **Test Simple de D2A**\n\n";
+
+// Configuración exacta como en tu implementación exitosa
+$apiKey = 'EBF3E0C2B8B540036ED36DA8004A2F56';
+$apiSecret = '5A167F6E4060C256FF6098ADAFF8A275';
+$environment = 'datst.simbel.com.ar';
+$customer = '91699759';
+
+// Simular exactamente el abu_session de tu ejemplo
+$abu_session_string = '["99666444","08/01/2025 09:38:16","-0300","f63ffdd75b5b3d0e50ba462db9a2d761","9951648c01172947203dc670e329fecf",""]';
+$abu_session = json_decode($abu_session_string, true);
+
+// Extraer valores como en tu implementación
+$userTime = $abu_session[1];
+$userTimeZone = $abu_session[2];
+$sessionName = str_replace('"','',$abu_session[3]);
+$visitorName = str_replace('"','',$abu_session[4]);
+
+// Simular el invitado como en tu implementación
+$invitado = array("email" => "test@example.com");
+$registrantEmail = $invitado['email'];
+
+echo "Configuración:\n";
+echo "API Key: $apiKey\n";
+echo "Customer: $customer\n";
+echo "Session Name: $sessionName\n";
+echo "Visitor Name: $visitorName\n";
+echo "Registrant: $registrantEmail\n";
+echo "User Time: $userTime\n";
+echo "User Time Zone: $userTimeZone\n\n";
+
+// Crear instancia de d2a exactamente como en tu implementación
+$conexion = new d2a($apiKey, $apiSecret, $environment, $customer, $sessionName, $visitorName, $registrantEmail, "", "", "", $userTime, $userTimeZone);
+
+echo "🔍 **Debug de la instancia d2a:**\n";
+echo "ApiKey: " . $conexion->ApiKey . "\n";
+echo "ApiSecret: " . $conexion->ApiSecret . "\n";
+echo "rs: " . $conexion->rs . "\n";
+echo "cs: " . $conexion->cs . "\n";
+echo "sn: " . $conexion->sn . "\n";
+echo "vn: " . $conexion->vn . "\n";
+echo "rg: " . $conexion->rg . "\n";
+echo "op: " . $conexion->op . "\n\n";
+
+// Crear mensaje de registration
+$msg = new d2aRegistration(
+    $registrantEmail,      // registrantId
+    'DNI',                 // typeOfId
+    '12345678',            // nationalId
+    'Juan',                // name
+    'Pérez',               // lastName
+    'N/A',                 // gender
+    '',                    // age
+    $registrantEmail,      // email
+    '+5491112345678',      // cellphone
+    '',                    // facebookId
+    '',                    // instagramId
+    '',                    // twitterId
+    '',                    // linkedinId
+    '',                    // city
+    '',                    // state
+    'Argentina',           // country
+    'Av. Corrientes 123',  // address1
+    '',                    // address2
+    '',                    // companyName
+    ''                     // companyCustomer
+);
+
+echo "📝 **Mensaje de registration creado:**\n";
+echo "Registrant: " . $msg->registrant . "\n";
+echo "Name: " . $msg->name . "\n";
+echo "Email: " . $msg->email . "\n\n";
+
+// Enviar mensaje
+$conexion->message("registration", $msg);
+
+echo "🔐 **Hash generado por d2a:**\n";
+echo "String a hashear (st): " . $conexion->st . "\n";
+echo "Hash (hs): " . $conexion->hs . "\n\n";
+
+echo "📤 **Enviando mensaje...**\n";
+$conexion->send($conexion);
+
+// Obtener resultado
+$resultado = $conexion->getLastMessageStatus();
+echo "📊 **Resultado:**\n";
+echo "Message ID: " . $resultado[0] . "\n";
+echo "Return Code: " . $resultado[1] . "\n";
+echo "Error Code: " . $resultado[2] . "\n";
+echo "Session Name: " . $resultado[3] . "\n";
+echo "Visitor Name: " . $resultado[4] . "\n";
+echo "Registrant: " . $resultado[5] . "\n\n";
+
+if ($resultado[1] == 0 || $resultado[1] == 'OK') {
+    echo "✅ ¡Éxito! Conexión con D2A funcionando correctamente.\n";
+} else {
+    echo "❌ Error: " . $resultado[2] . "\n";
+} 

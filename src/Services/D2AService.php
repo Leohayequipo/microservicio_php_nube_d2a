@@ -25,18 +25,18 @@ class D2AService {
     }
 
     public function sendEvent(array $payload): bool {
-        // Crear el objeto de tracking según la implementación de D2A
+        // Crear el objeto de tracking según la implementación exacta de D2A del usuario
         $track = [
             'cs' => $this->customer,
             'abuVer' => 'APIV1.1',
-            'ts' => date('c'),
-            'tz' => date('P'),
+            'ts' => $payload['userTime'] ?? date('c'),
+            'tz' => $payload['userTimeZone'] ?? date('P'),
             'sessionName' => $payload['sessionName'] ?? '',
             'visitorName' => $payload['visitorName'] ?? '',
             'registrant' => $payload['registrant'] ?? '',
             'operation' => $payload['operation'] ?? '',
             'ApiKey' => $this->apiKey,
-            'hs' => $this->generateHash($payload['operation'] ?? ''),
+            'hs' => $this->generateHash($payload['operation'] ?? '', $payload['registrant'] ?? ''),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? ''
         ];
 
@@ -104,8 +104,10 @@ class D2AService {
     /**
      * Genera el hash de autenticación según la implementación de D2A
      */
-    private function generateHash($operation): string {
-        $string = $this->apiKey . $this->apiSecret . $this->customer . ($operation ?? '');
+    private function generateHash($operation, $registrant = ''): string {
+        // Según la implementación exitosa del usuario, el hash se genera como:
+        // ApiKey + ApiSecret + Customer + Registrant + Operation
+        $string = $this->apiKey . $this->apiSecret . $this->customer . $registrant . $operation;
         return md5($string);
     }
 
@@ -114,9 +116,25 @@ class D2AService {
      * Se ejecuta cuando se cargan los datos del cliente en el checkout
      * 
      * @param array $data - Datos del cliente según especificación ABU_registration
+     * @param string $abuSession - JSON string del abu_session del frontend
      * @return bool
      */
-    public function registerCustomer(array $data): bool {
+    public function registerCustomer(array $data, string $abuSession = ''): bool {
+        // Procesar abu_session si se proporciona
+        $sessionData = [];
+        if (!empty($abuSession)) {
+            $abuArray = json_decode($abuSession, true);
+            if ($abuArray && count($abuArray) >= 6) {
+                $sessionData = [
+                    'userTime' => $abuArray[1],
+                    'userTimeZone' => $abuArray[2],
+                    'sessionName' => str_replace('"', '', $abuArray[3]),
+                    'visitorName' => str_replace('"', '', $abuArray[4]),
+                    'registrant' => str_replace(']', '', str_replace('"', '', $abuArray[5]))
+                ];
+            }
+        }
+
         // Validar datos requeridos
         $requiredFields = [
             'registrant', 'typeOfId', 'nationalId', 'name', 'lastName', 
@@ -156,12 +174,14 @@ class D2AService {
             'companyCustomer' => ''
         ];
 
-        // Preparar el payload para envío
+        // Preparar el payload para envío según la implementación exacta del usuario
         $payload = [
             'operation' => 'registration',
-            'registrant' => $data['registrant'],
-            'sessionName' => $data['sessionName'] ?? '',
-            'visitorName' => $data['visitorName'] ?? '',
+            'registrant' => $sessionData['registrant'] ?? $data['registrant'],
+            'sessionName' => $sessionData['sessionName'] ?? $data['sessionName'] ?? '',
+            'visitorName' => $sessionData['visitorName'] ?? $data['visitorName'] ?? '',
+            'userTime' => $sessionData['userTime'] ?? $data['userTime'] ?? date('c'),
+            'userTimeZone' => $sessionData['userTimeZone'] ?? $data['userTimeZone'] ?? date('P'),
             'data' => $registrationData
         ];
 
