@@ -313,7 +313,7 @@ class d2aMsg {
     public $ms;
 
     function __construct($ApiKey,$ApiSecret,$cs,$rg,$op,$hs,$ms) {
-	$this->track = new d2aApiTrk($ApiKey,$ApiSecret,$cs,$rg,$op,$hs);
+	$this->track = new d2aApiTrk($ApiKey,$ApiSecret,$cs,"","",$rg,$op,$hs);
 	$this->ms = $ms;
     }
 
@@ -396,10 +396,12 @@ class d2a {
             CURLOPT_TIMEOUT        => 120,    // time-out on response
         );
         
-       
+        // Crear la estructura correcta con d2aMsg
+        $d2aMessage = new d2aMsg($this->ApiKey, $this->ApiSecret, $this->cs, $this->rg, $this->op, $this->hs, $this->ms);
+        
         // what post fields?
         $fields = array(
-            'data' => json_encode($this->ms)
+            'data' => json_encode($d2aMessage)
         );
         
         // build the urlencoded data
